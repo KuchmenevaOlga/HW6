@@ -31,15 +31,15 @@ class PhotoCollectionViewCell: UICollectionViewCell {
         URLSession.shared.dataTask(with: url, completionHandler: completion).resume()
     }
 
-     func downloadImage(from url: URL) {
-        getData(from: url) { data, response, error in
+    func downloadImage(from url: URL) {
+        getData(from: url) {[weak self] data, response, error in
             guard let data = data, error == nil else { return }
-            DispatchQueue.main.async() { [weak self] in
+            DispatchQueue.main.async { [weak self] in
                 self?.photoView.image = UIImage(data: data)
             }
         }
      }
-
+    
     override init(frame: CGRect) {
         super.init(frame: frame)
         contentView.backgroundColor = .white
@@ -55,7 +55,11 @@ class PhotoCollectionViewCell: UICollectionViewCell {
     
     func configure(item: PhotoItem) {
         titleLabel.text = item.title
-        let url = URL(string: item.url)!
+        self.url = item.url
+        let urlAdress = URL(string: self.url ?? "")
+        guard let url = urlAdress else {
+            return
+        }
         downloadImage(from: url)
     }
 }
@@ -76,7 +80,6 @@ extension PhotoCollectionViewCell{
             make.top.equalTo(titleLabel.snp.bottom).offset(4)
             make.width.equalToSuperview()
             make.bottom.equalToSuperview().inset(4)
-            
         }
     }
 }

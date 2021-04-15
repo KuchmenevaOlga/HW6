@@ -28,31 +28,27 @@ class PhotosViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-
         
         AF.request("https://jsonplaceholder.typicode.com/photos").response {
-            response in
+            [self] response in
 
             guard let data = response.data else {return}
-            let json = try! JSON(data: data)
+            guard let json = try? JSON(data: data) else {return}
             
-            if let items = json.array
-            {
-                for item in items
+            guard let items = json.array else {return}
+            items.forEach { item in
+                    if let url  = item["url"].string,
+                       let thumbnailUrl = item["thumbnailUrl"].string,
+                       let title = item["title"].string,
+                       let albumId = item["albumId"].object as? Int,
+                       let id = item["id"].object as? Int
                     {
-                        if let url  = item["url"].string,
-                            let thumbnailUrl = item["thumbnailUrl"].string,
-                            let title = item["title"].string,
-                            let albumId = item["albumId"].object as? Int,
-                            let id = item["id"].object as? Int
-                        {
-                            self.photos.append(PhotoItem(url: url, thumbnailUrl: thumbnailUrl, title: title, albumId: albumId, id: id))
-                            if self.photos.count > 4 {
-                                self.collectionView.reloadData()
-                            }
+                        self.photos.append(PhotoItem(url: url, thumbnailUrl: thumbnailUrl, title: title, albumId: albumId, id: id))
+                        if self.photos.count == 1 {
+                            self.collectionView.reloadData()
                         }
                     }
-            }
+                }
         }
         setupLayout()
     }
